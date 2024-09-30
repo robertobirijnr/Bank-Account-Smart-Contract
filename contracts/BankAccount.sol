@@ -109,7 +109,7 @@ contract BankAccount {
     }
 
     function createAccount(
-        address[] calldata otherOners
+        address[] calldata otherOwners
     ) external validOwners(otherOwners) {
         // create an array of all owners
         address[] memory owners = new address[](otherOwners.length + 1);
@@ -139,7 +139,7 @@ contract BankAccount {
         uint amount
     ) external accountOwner(accountId) sufficientBalance(accountId, amount) {
         uint id = nextWithdrawId;
-        withdrawRequest storage request = accounts[accountId].withdrawRequest[
+        withdrawRequests storage request = accounts[accountId].withdrawRequest[
             id
         ];
         request.user = msg.sender;
@@ -156,7 +156,7 @@ contract BankAccount {
 
     function approveWithdrawl(
         uint accountId,
-        uint witthdrawId
+        uint withdrawId
     ) external accountOwner(accountId) canApprove(accountId, withdrawId) {
         WithdrawRequest storage request = accounts[accountId].withdrawRequests[
             withdrawId
@@ -185,14 +185,22 @@ contract BankAccount {
         emit withdraw(withdrawId, block.timestamp);
     }
 
-    function getBalance(uint accountId) public view returns (uint) {}
+    function getBalance(uint accountId) public view returns (uint) {
+        return accounts[accountId].balance;
+    }
 
-    function getOwners(uint accountId) public view returns (address[] memory) {}
+    function getOwners(uint accountId) public view returns (address[] memory) {
+        return accounts[accountId].owners;
+    }
 
     function getapprovals(
         uint accountId,
         uint withdrawId
-    ) public view returns (uint) {}
+    ) public view returns (uint) {
+        return accounts[accountId].withdrawRequests[withdrawId].approvals;
+    }
 
-    function getAccounts() public view returns () {}
+    function getAccounts() public view returns (uint256[] memory) {
+        return userAccounts[msg.sender];
+    }
 }
