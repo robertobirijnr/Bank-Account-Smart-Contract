@@ -56,6 +56,9 @@ contract BankAccount {
     modifier validOwners(address[] calldata owners) {
         require(owners.length + 1 <= 4, "maximum of 4 owners per account");
         for (uint i; i < owners.length; i++) {
+            if (owners[i] == msg.sender) {
+                revert("no duplicate owners");
+            }
             for (uint j = i + 1; j < owners.length; j++) {
                 if (owners[i] == owners[j]) {
                     revert("no duplicate owners");
@@ -72,19 +75,19 @@ contract BankAccount {
 
     modifier canApprove(uint accountId, uint withdrawId) {
         require(
-            !accounts[accountId].withdrawRequests[withdrawId].approved,
+            !accounts[accountId].WithdrawRequests[withdrawId].approved,
             "this request is already approved"
         );
         require(
-            accounts[accountId].withdrawRequests[withdrawId].user != msg.sender,
+            accounts[accountId].WithdrawRequests[withdrawId].user != msg.sender,
             "you cannot approve this request"
         );
         require(
-            accounts[accountId].withdrawRequests[withdrawId].user != address(0),
+            accounts[accountId].WithdrawRequests[withdrawId].user != address(0),
             "this request does not exist"
         );
         require(
-            !accounts[accountId].withdrawRequests[withdrawId].ownersApproved[
+            !accounts[accountId].WithdrawRequests[withdrawId].ownersApproved[
                 msg.sender
             ],
             "you have already approved this request"
@@ -94,11 +97,11 @@ contract BankAccount {
 
     modifier canWithdraw(uint accountId, uint withdrawId) {
         require(
-            accounts[accountId].withdrawRequests[withdrawId].user == msg.sender,
+            accounts[accountId].WithdrawRequests[withdrawId].user == msg.sender,
             "you did not create this request"
         );
         require(
-            accounts[accountId].withdrawRequests[withdrawId].approved,
+            accounts[accountId].WithdrawRequests[withdrawId].approved,
             "this request is not approved"
         );
         _;
@@ -139,7 +142,7 @@ contract BankAccount {
         uint amount
     ) external accountOwner(accountId) sufficientBalance(accountId, amount) {
         uint id = nextWithdrawId;
-        withdrawRequests storage request = accounts[accountId].withdrawRequest[
+        WithdrawRequest storage request = accounts[accountId].WithdrawRequests[
             id
         ];
         request.user = msg.sender;
@@ -158,13 +161,13 @@ contract BankAccount {
         uint accountId,
         uint withdrawId
     ) external accountOwner(accountId) canApprove(accountId, withdrawId) {
-        WithdrawRequest storage request = accounts[accountId].withdrawRequests[
+        WithdrawRequest storage request = accounts[accountId].WithdrawRequests[
             withdrawId
         ];
         request.approvals++;
         request.ownersApproved[msg.sender] = true;
 
-        if (request.approvals == accounts[accoundId].owners.length - 1) {
+        if (request.approvals == accounts[accountId].owners.length - 1) {
             request.approved = true;
         }
     }
@@ -173,16 +176,16 @@ contract BankAccount {
         uint accountId,
         uint withdrawId
     ) external canWithdraw(accountId, withdrawId) {
-        uint amount = accounts[accountId].withdrawRequests[withdrawId].amount;
+        uint amount = accounts[accountId].WithdrawRequests[withdrawId].amount;
         require(accounts[accountId].balance >= amount, "insufficient balance");
 
         accounts[accountId].balance -= amount;
-        delete accounts[accountId].withdrawRequsts[withdrawId];
+        delete accounts[accountId].WithdrawRequests[withdrawId];
 
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
         require(sent);
 
-        emit withdraw(withdrawId, block.timestamp);
+        emit Withdraw(withdrawId, block.timestamp);
     }
 
     function getBalance(uint accountId) public view returns (uint) {
@@ -197,7 +200,7 @@ contract BankAccount {
         uint accountId,
         uint withdrawId
     ) public view returns (uint) {
-        return accounts[accountId].withdrawRequests[withdrawId].approvals;
+        return accounts[accountId].WithdrawRequests[withdrawId].approvals;
     }
 
     function getAccounts() public view returns (uint256[] memory) {
