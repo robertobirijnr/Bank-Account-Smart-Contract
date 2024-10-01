@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bank Account Test</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="mb-3">
+        <label for="create">Create Account</label>
+        <div class="row">
+          <div class="col-md-8">
+            <input type="text" id="owners" />
+          </div>
+          <div class="col-md-4">
+            <button onclick="CreateAccount()">Create</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="create">View Account</label>
+        <div class="row">
+          <div class="col-md-8">
+            <p id="accounts"></p>
+          </div>
+          <div class="col-md-4">
+            <button onclick="ViewAccount()">View Accounts</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+      type="application/javascript"
+    ></script>
+    <script type="text/javascript" src="base.js"></script>
+  </body>
+</html>
